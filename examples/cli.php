@@ -31,7 +31,8 @@ if (isset($argv[1])){
         $username = $argv[2];    // Your number with country code, ie: 34123456789
         $code = $argv[3];
         $r = new Registration($username, $debug);
-        $r->codeRegister($code);
+        var_dump($r->codeRegister($code));
+
         echo "your code has been registered .. save the password for next step";
         break;
       case '--login-user':
@@ -53,7 +54,7 @@ if (isset($argv[1])){
             $w = new WhatsProt($src, $nickname, $debug);
             $w->connect(); // Connect to WhatsApp network
             $w->loginWithPassword($password); // logging in with the password we got!
-            $w->sendMessage($target , $message);
+            $w->sendMessage($target , $msg);
         }else{
             echo "wrong parameters";
             echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
