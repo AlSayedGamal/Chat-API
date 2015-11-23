@@ -2,6 +2,7 @@
 require_once '../src/config.php';
 require_once '../src/whatsprot.class.php';
 require_once '../src/Registration.php';
+require_once '../src/events/MyEvents.php';
 $debug    = DEBUG;  // Shows debug log, this is set to false if not specified
 $log      = LOGGING;  // Enables log file, this is set to false if not specified
 if (isset($argv[1]) == false){
@@ -12,8 +13,10 @@ if (isset($argv[1]) == false){
 --register-code     --register-code <username> <SMS-code-withouth-dash>
                     --register-code 20123456789 123456
 
---login-user        --login-user <username> <nickname> <password from --register-code>
+--login-user        --login-user <username> <nickname> <password>
                     --login-user 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34
+--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+                    --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34
   ";
 }
 if (isset($argv[1])){
@@ -39,6 +42,23 @@ if (isset($argv[1])){
         $w->connect(); // Connect to WhatsApp network
         $w->loginWithPassword($password); // logging in with the password we got!
         echo "your code has been registered .. save the password for next step";
+        break;
+      case '--msg-text':
+        $src = $argv[2];    // Your number with country code, ie: 201003544877
+        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+        $password = $argv[4];    //your password
+        $target = $argv[5];    // Destination number  with country code, ie: 20100354499
+        $msg = $argv[6];
+        if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6]){
+            $w = new WhatsProt($src, $nickname, $debug);
+            $w->connect(); // Connect to WhatsApp network
+            $w->loginWithPassword($password); // logging in with the password we got!
+            $w->sendMessage($target , $message);
+        }else{
+            echo "wrong parameters";
+            echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+                    --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
+        }
         break;
       default:
         $bold_msg = bold("php clip.php");
