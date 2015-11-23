@@ -9,7 +9,7 @@ if (isset($argv[1]) == false){
 --register          --register <username>
                     --register 20123456789
 
---register-code     --register-code <username> <code-withouth-dash>
+--register-code     --register-code <username> <SMS-code-withouth-dash>
                     --register-code 20123456789 123456
 
 --login-user        --login-user <username> <nickname> <password from --register-code>
@@ -41,8 +41,14 @@ if (isset($argv[1])){
         echo "your code has been registered .. save the password for next step";
         break;
       default:
-        echo "Please, choose one of the options --register --login";
+        $bold_msg = bold("php clip.php");
+        echo "Wrong option please use {$bold_msg} for available options";
         break;
     }
+}
+
+
+function bold($text){
+    return "\033[1m{$text}\033[0m";
 }
 ?>
