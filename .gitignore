@@ -2,6 +2,8 @@
 /vendor
 /.idea
 /nbproject
+/src/wadata/*
+/src/wadata.*
 composer.phar
 .env.*.php
 .env.php
