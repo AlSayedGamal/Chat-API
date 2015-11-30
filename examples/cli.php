@@ -61,11 +61,52 @@ if (isset($argv[1])){
         }else{
             echo "wrong parameters";
             echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
-                    --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
+                    --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34 201001234567 'Hello..'";
+        }
+        break;
+      case '--msg-img':
+        $src = $argv[2];    // Your number with country code, ie: 201003544877
+        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+        $password = $argv[4];    //your password
+        $target = $argv[5];    // Destination number  with country code, ie: 20100354499
+        $msg = $argv[6];
+        $filepath = $argv[7];
+        if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6] && $argv[7]){
+            $w = new WhatsProt($src, $nickname, $debug);
+            $w->connect(); // Connect to WhatsApp network
+            $w->loginWithPassword($password); // logging in with the password we got!
+            $fsize = filesize($filepath);
+            $fhash = hash_file("md5", $filepath);
+            // echo json_encode($w->sendMessageImage($target, $filepath, false, $fsize, $fhash, $msg));
+            echo json_encode($w->sendMessageImage($target, $filepath, false, false, false, $msg));
+            $w->pollMessage();
+
+        }else{
+            echo "wrong parameters";
+            // echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+            //         --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
+        }
+        break;
+      case '--msg-receive':
+        $src = $argv[2];    // Your number with country code, ie: 201003544877
+        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+        $password = $argv[4];    //your password
+        // $target = $argv[5];    // Destination number  with country code, ie: 20100354499
+        // $msg = $argv[6];
+        if ($argv[2] && $argv[3] && $argv[4]){
+            $w = new WhatsProt($src, $nickname, $debug);
+            $w->connect(); // Connect to WhatsApp network
+            $w->loginWithPassword($password); // logging in with the password we got!
+            echo json_encode($w->pollMessage());
+
+        }else{
+            echo "wrong parameters";
+            // echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+            //         --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
         }
         break;
       default:
-        $bold_msg = bold("php clip.php");
+        $bold_msg = bold("php cli.php");
         echo "Wrong option please use {$bold_msg} for available options";
         break;
     }
