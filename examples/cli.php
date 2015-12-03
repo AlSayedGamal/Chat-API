@@ -3,8 +3,12 @@ require_once '../src/config.php';
 require_once '../src/whatsprot.class.php';
 require_once '../src/Registration.php';
 require_once '../src/events/MyEvents.php';
-$debug    = DEBUG;  // Shows debug log, this is set to false if not specified
+
+// $debug    = DEBUG;  // Shows debug log, this is set to false if not specified
+// $log      = LOGGING;  // Enables log file, this is set to false if not specified
+$debug    = false;  // Shows debug log, this is set to false if not specified
 $log      = LOGGING;  // Enables log file, this is set to false if not specified
+
 if (isset($argv[1]) == false){
   echo "Usage:  PHP cli.php [option] arg1 arg2...
 ".bold("--register")."      --register <username>
@@ -19,7 +23,9 @@ if (isset($argv[1]) == false){
                 --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34
   ";
 }
+
 if (isset($argv[1])){
+    $res = '';
     switch ($argv[1]) {
       case '--register':
         $username = $argv[2];    // Your number with country code, ie: 34123456789
@@ -27,16 +33,23 @@ if (isset($argv[1])){
         try {
             $res = $r->codeRequest('sms');
         } catch (Exception $e) {
-            echo json_encode($e);
+            echo json_encode(array('error'=>$e->getMessage()));
+            echo "\n";
         }
-        echo $res;
+        if ($res != ""){
+            echo json_encode($res);
+            echo "\n";            
+        }
         break;
       case '--register-code':
         $username = $argv[2];    // Your number with country code, ie: 34123456789
         $code = $argv[3];
         $r = new Registration($username, $debug);
         $res = json_encode($r->codeRegister($code));
-        echo $res ;
+        if ($res != ""){
+            echo json_encode($res);
+            echo "\n";            
+        }
         break;
       case '--login-user':
         $username = $argv[2];    // Your number with country code, ie: 34123456789
@@ -78,7 +91,7 @@ if (isset($argv[1])){
             $fsize = filesize($filepath);
             $fhash = hash_file("md5", $filepath);
             // echo json_encode($w->sendMessageImage($target, $filepath, false, $fsize, $fhash, $msg));
-            echo json_encode($w->sendMessageImage($target, $filepath, false, false, false, $msg));
+            echo print_r($w->sendMessageImage($target, $filepath, false, false, false, $msg));
             $w->pollMessage();
 
         }else{
