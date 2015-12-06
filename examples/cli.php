@@ -20,7 +20,7 @@ class MyEvents extends AllEvents
     public function onGetMessage($mynumber, $from, $id, $type, $time, $name, $body) {
         // echo "New Message from $from < $name > contains: $body";
         global $cliMessages;
-        array_push($cliMessages, ['from'=>$from, 'type'=>$type, 'time'=>$time, 'name'=>$name, 'body'=>$body]);
+        array_push($cliMessages, ['id'=>$id, 'from'=>$from, 'type'=>$type, 'time'=>$time, 'name'=>$name, 'body'=>$body]);
     }
 }
 
