@@ -58,8 +58,8 @@ class MyEvents extends AllEvents
 //        'onMediaUploadFailed',
 //        'onMessageComposing',
 //        'onMessagePaused',
-//        'onMessageReceivedClient',
-//        'onMessageReceivedServer',
+       'onMessageReceivedClient',
+       'onMessageReceivedServer',
 //        'onPaidAccount',
 //        'onPing',
 //        'onPresenceAvailable',
@@ -85,4 +85,13 @@ class MyEvents extends AllEvents
     {
         echo "<p>Booo!, Phone number $mynumber is disconnected!</p>";
     }
+    
+    public function onMessageReceivedClient($mynumber, $from, $id, $type, $time, $participant) {
+        echo "<p>Booo!, Phone number $mynumber sent a message to me..!</p>";
+    }
+    public function onMessageReceivedServer($mynumber, $from, $id, $type, $time) {
+        echo "<p>Booo!, Phone number $mynumbe sent a message to server!</p>";
+    }
+
+
 }
