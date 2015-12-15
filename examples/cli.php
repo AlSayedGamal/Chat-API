@@ -1,27 +1,204 @@
 <?php
+/**
+ * CLI non-interactive script for Chat-API
+ *
+ * PHP Version: 5.6+
+ *
+ * @category  Communications
+ * @package   Chat-API
+ * @author    Anass Ahmed <anass@mussder.com>
+ * @copyright 2015 - Anass Ahmed, 08 December, 2015
+ * @license   GPL <http://gnu.org/>
+ * @version   GIT: $id
+ * @link      http://github.com/AlSayedGamal/Chat-API
+ */
+
 require_once '../src/config.php';
 require_once '../src/whatsprot.class.php';
 require_once '../src/Registration.php';
-// require_once '../src/events/MyEvents.php';
 require '../src/events/AllEvents.php';
 
-// $debug    = DEBUG;  // Shows debug log, this is set to false if not specified
-// $log      = LOGGING;  // Enables log file, this is set to false if not specified
 $debug    = false;  // Shows debug log, this is set to false if not specified
 $log      = LOGGING;  // Enables log file, this is set to false if not specified
-$cliMessages = array();
+// $cliMessages = array();
+$output = [
+    'onSendMessage' => array(),
+    'onSendMessageReceived' => array(),
+    'onMessageReceivedServer' => array(),
+    'onMessageReceivedClient' => array(),
+    'messages' => array(),
+];
 
+/**
+ * MyEvents
+ *
+ * Extends AllEvents
+ *
+ * @package Chat-API
+ * @author  Anass Ahmed <anass@mussder.com>
+ */
 class MyEvents extends AllEvents
 {
     public $activeEvents = array(
+        'onSendMessage',
+        'onSendMessageReceived',
+        'onMessageReceivedServer',
+        'onMessageReceivedClient',
         'onGetMessage',
+        'onGetImage',
+        'onGetAudio',
+        'onGetVideo',
     );
 
-    public function onGetMessage($mynumber, $from, $id, $type, $time, $name, $body) {
-        // echo "New Message from $from < $name > contains: $body";
-        global $cliMessages;
-        array_push($cliMessages, ['id'=>$id, 'from'=>$from, 'type'=>$type, 'time'=>$time, 'name'=>$name, 'body'=>$body]);
+    public function onSendMessage($mynumber, $target, $messageId, $node) {
+        global $output;
+        array_push(
+            $output['onSendMessage'],
+            [
+                'target' => $target,
+                'messageId' => $messageId,
+                'node' => $node
+            ]
+        );
     }
+
+    public function onSendMessageReceived($mynumber, $id, $from, $type) {
+        global $output;
+        array_push(
+            $output['onSendMessageReceived'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type
+            ]
+        );
+    }
+
+    public function onMessageReceivedClient($mynumber, $from, $id, $type, $time, $participant) {
+        global $output;
+        array_push(
+            $output['onMessageReceivedClient'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+                'participant' => $participant
+            ]
+        );
+    }
+
+    public function onMessageReceivedServer($mynumber, $from, $id, $type, $time) {
+        global $output;
+        array_push(
+            $output['onMessageReceivedServer'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+            ]
+        );
+    }
+
+    public function onGetMessage($mynumber, $from, $id, $type, $time, $name, $body) {
+        global $output;
+        array_push(
+            $output['messages'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+                'name' => $name,
+                'body' => $body
+            ]
+        );
+    }
+
+    public function onGetImage($mynumber, $from, $id, $type, $time, $name, $size, $url, $file, $mimeType, $fileHash, $width, $height, $preview, $caption) {
+        global $output;
+        array_push(
+            $output['messages'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+                'name' => $name,
+                'size' => $size,
+                'url' => $url,
+                'file' => $file,
+                'mimeType' => $mimeType,
+                'fileHash' => $fileHash,
+                'width' => $width,
+                'hight' => $hight,
+                'preview' => $preview,
+                'caption' => $caption
+            ]
+        );
+    }
+
+    public function onGetAudio($mynumber, $from, $id, $type, $time, $name, $size, $url, $file, $mimeType, $fileHash, $duration, $acodec, $fromJID_ifGroup = null) {
+        global $output;
+        array_push(
+            $output['messages'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+                'name' => $name,
+                'size' => $size,
+                'url' => $url,
+                'file' => $file,
+                'mimeType' => $mimeType,
+                'fileHash' => $fileHash,
+                'duration' => $duration,
+                'acodec' => $acodec
+            ]
+        );
+    }
+
+    public function onGetVideo($mynumber, $from, $id, $type, $time, $name, $url, $file, $size, $mimeType, $fileHash, $duration, $vcodec, $acodec, $preview, $caption) {
+        global $output;
+        array_push(
+            $output['messages'],
+            [
+                'id' => $id,
+                'from' => $from,
+                'type' => $type,
+                'time' => $time,
+                'name' => $name,
+                'size' => $size,
+                'url' => $url,
+                'file' => $file,
+                'mimeType' => $mimeType,
+                'fileHash' => $fileHash,
+                'duration' => $duration,
+                'acodec' => $acodec,
+                'vcodec' => $vcodec,
+                'preview' => $preview,
+                'caption' => $caption
+            ]
+        );
+    }
+}
+
+/**
+ * Initiate Connection for Sending, Receiving Messages
+ *
+ * @return WhatsProt
+ * @author Anass Ahmed
+ **/
+function initiateConnection($username, $nickname, $password, $debug) {
+    $w = new WhatsProt($username, $nickname, $debug);
+    $w->connect(); // Connect to WhatsApp network
+    $w->loginWithPassword($password); // logging in with the password we got!
+    $w->sendGetClientConfig(); // Get client config
+    $w->sendGetServerProperties(); // Get server properties
+    $w->pollMessage();
+    return $w;
 }
 
 if (isset($argv[1]) == false){
@@ -55,7 +232,7 @@ if (isset($argv[1])){
         }
         if ($res != ""){
             echo json_encode($res);
-            echo "\n";            
+            echo "\n";
         }
         break;
       case '--register-code':
@@ -65,7 +242,7 @@ if (isset($argv[1])){
         $res = json_encode($r->codeRegister($code));
         if ($res != ""){
             echo json_encode($res);
-            echo "\n";            
+            echo "\n";
         }
         break;
       case '--login-user':
@@ -130,11 +307,7 @@ if (isset($argv[1])){
             $w->sendGetClientConfig(); // Get client config
             $w->sendGetServerProperties(); // Get server properties
             $w->pollMessage();
-            // $messages = $w->getMessages();
-            // $msgs = $w->getMessages();
-            // echo json_encode($messages);
-            // echo json_encode($msgs);
-            echo json_encode($cliMessages);
+            echo json_encode($output);
             echo "\n";
         }else{
             echo json_encode(array('error'=>"Expecting --msg-receive <username> <nickname> <password>"));
@@ -146,22 +319,6 @@ if (isset($argv[1])){
         break;
     }
 }
-
-
-// function fgets_u($pStdn)
-// {
-//     $pArr = array($pStdn);
-
-//     if (false === ($num_changed_streams = stream_select($pArr, $write = NULL, $except = NULL, 0))) {
-//         print("\$ 001 Socket Error : UNABLE TO WATCH STDIN.\n");
-
-//         return FALSE;
-//     } elseif ($num_changed_streams > 0) {
-//         return trim(fgets($pStdn, 1024));
-//     }
-//     return null;
-// }
-
 
 function bold($text){
     return "\033[1m{$text}\033[0m";
