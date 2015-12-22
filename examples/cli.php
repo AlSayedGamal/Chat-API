@@ -132,8 +132,8 @@ class MyEvents extends AllEvents
                 'mimeType' => $mimeType,
                 'fileHash' => $fileHash,
                 'width' => $width,
-                'hight' => $hight,
-                'preview' => $preview,
+                'height' => $height,
+                // 'preview' => $preview,
                 'caption' => $caption
             ]
         );
@@ -178,7 +178,7 @@ class MyEvents extends AllEvents
                 'duration' => $duration,
                 'acodec' => $acodec,
                 'vcodec' => $vcodec,
-                'preview' => $preview,
+                // 'preview' => $preview,
                 'caption' => $caption
             ]
         );
@@ -191,8 +191,11 @@ class MyEvents extends AllEvents
  * @return WhatsProt
  * @author Anass Ahmed
  **/
+
 function initiateConnection($username, $nickname, $password, $debug) {
     $w = new WhatsProt($username, $nickname, $debug);
+    $events = new MyEvents($w);
+    $events->setEventsToListenFor($events->activeEvents);
     $w->connect(); // Connect to WhatsApp network
     $w->loginWithPassword($password); // logging in with the password we got!
     $w->sendGetClientConfig(); // Get client config
@@ -228,91 +231,102 @@ if (isset($argv[1])){
             $res = $r->codeRequest('sms');
         } catch (Exception $e) {
             echo json_encode(array('error'=>$e->getMessage()));
-            echo "\n";
         }
         if ($res != ""){
-            echo json_encode($res);
-            echo "\n";
+            echo json_encode($res);    
         }
+        echo "\n\n";
         break;
-      case '--register-code':
-        $username = $argv[2];    // Your number with country code, ie: 34123456789
-        $code = $argv[3];
-        $r = new Registration($username, $debug);
-        $res = json_encode($r->codeRegister($code));
-        if ($res != ""){
-            echo json_encode($res);
-            echo "\n";
-        }
-        break;
-      case '--login-user':
-        $username = $argv[2];    // Your number with country code, ie: 34123456789
-        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
-        $password = $argv[4];    // Your nickname, it will appear in push notifications
-        $w = new WhatsProt($username, $nickname, $debug);
-        $w->connect(); // Connect to WhatsApp network
-        $w->loginWithPassword($password); // logging in with the password we got!
-        break;
-      case '--msg-text':
-        $src = $argv[2];    // Your number with country code, ie: 201003544877
-        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
-        $password = $argv[4];    //your password
-        $target = $argv[5];    // Destination number  with country code, ie: 20100354499
-        $msg = $argv[6];
-        if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6]){
-            $w = new WhatsProt($src, $nickname, $debug);
-            $w->connect(); // Connect to WhatsApp network
-            $w->loginWithPassword($password); // logging in with the password we got!
-            echo json_encode($w->sendMessage($target , $msg));
 
-        }else{
-            echo "wrong parameters";
-            echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
-                    --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34 201001234567 'Hello..'";
-        }
-        break;
-      case '--msg-img':
-        $src = $argv[2];    // Your number with country code, ie: 201003544877
-        $nickname = $argv[3];    // Your nickname, it will appear in push notifications
-        $password = $argv[4];    //your password
-        $target = $argv[5];    // Destination number  with country code, ie: 20100354499
-        $msg = $argv[6];
-        $filepath = $argv[7];
-        if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6] && $argv[7]){
-            $w = new WhatsProt($src, $nickname, $debug);
-            $w->connect(); // Connect to WhatsApp network
-            $w->loginWithPassword($password); // logging in with the password we got!
-            $fsize = filesize($filepath);
-            $fhash = hash_file("md5", $filepath);
-            // echo json_encode($w->sendMessageImage($target, $filepath, false, $fsize, $fhash, $msg));
-            echo print_r($w->sendMessageImage($target, $filepath, false, false, false, $msg));
-            $w->pollMessage();
+        case '--register-code':
+            $username = $argv[2];    // Your number with country code, ie: 34123456789
+            $code = $argv[3];
+            $r = new Registration($username, $debug);
+            $res = json_encode($r->codeRegister($code));
+            if ($res != ""){
+                echo json_encode($res);
+            }
+            echo "\n\n";
+            break;
+      
+        case '--login-user':
+            $username = $argv[2];    // Your number with country code, ie: 34123456789
+            $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+            $password = $argv[4];    // Your nickname, it will appear in push notifications
 
-        }else{
-            echo "wrong parameters";
-            // echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
-            //         --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
-        }
-        break;
+            $w = new WhatsProt($username, $nickname, $debug);
+            $w->connect(); // Connect to WhatsApp network
+            try{
+                $w->loginWithPassword($password); // logging in with the password we got!
+            } catch (Exception $e) {
+                echo json_encode(array('error'=>$e->getMessage()));
+            }
+
+            echo "\n\n";
+            break;
+
+        case '--msg-text':
+            $username = $argv[2];    // Your number with country code, ie: 201003544877
+            $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+            $password = $argv[4];    //your password
+            $target = $argv[5];    // Destination number  with country code, ie: 20100354499
+            $msg = $argv[6];
+            if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6]){
+                try{
+                    $w = initiateConnection($username, $nickname, $password, $debug);
+                    $w->sendMessage($target , $msg);
+                    echo "\n";
+                    echo json_encode($output);
+                } catch (Exception $e) {
+                    echo json_encode(array('error'=>$e->getMessage()));
+                }
+            }else{
+                echo "wrong parameters";
+                echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+                        --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34 201001234567 'Hello..'";
+            }
+            echo "\n\n";
+            break;
+
+        case '--msg-img':
+            $username = $argv[2];    // Your number with country code, ie: 201003544877
+            $nickname = $argv[3];    // Your nickname, it will appear in push notifications
+            $password = $argv[4];    //your password
+            $target = $argv[5];    // Destination number  with country code, ie: 20100354499
+            $msg = $argv[6];
+            $filepath = $argv[7];
+            if ($argv[2] && $argv[3] && $argv[4] && $argv[5] && $argv[6] && $argv[7]){
+                try{
+                    $w = initiateConnection($username, $nickname, $password, $debug);
+                    $fsize = filesize($filepath);
+                    $fhash = hash_file("md5", $filepath);
+                    // echo json_encode($w->sendMessageImage($target, $filepath, false, $fsize, $fhash, $msg));
+                    echo print_r($w->sendMessageImage($target, $filepath, false, false, false, $msg));
+                } catch (Exception $e) {
+                    echo json_encode(array('error'=>$e->getMessage()));
+                }
+            }else{
+                echo "wrong parameters";
+                // echo "--msg-text          --msg-text <username> <nickname> <password> <destination> <msg>
+                //         --msg-text 20123456789 AlSayedGamal i3u4o23i4b234goi4u23l4kjblk34";
+            }
+            echo "\n\n";
+            break;
+
       case '--msg-receive':
         if ($argv[2] && $argv[3] && $argv[4]){
             $username = $argv[2];       // telephone number +201003544877
             $nickname = $argv[3];       // Your nickname, it will appear in push notifications if any.
             $password = $argv[4];       // your password (generated by whatsapp)
-            $w = new WhatsProt($username, $nickname, $debug);
-            $events = new MyEvents($w);
-            $events->setEventsToListenFor($events->activeEvents);
-            $w->connect(); // Connect to WhatsApp network
-            $w->loginWithPassword($password); // logging in with the password we got!
-            $w->sendGetClientConfig(); // Get client config
-            $w->sendGetServerProperties(); // Get server properties
-            $w->pollMessage();
-            echo json_encode($output);
+            $w = initiateConnection($username, $nickname, $password, $debug);
             echo "\n";
+            echo json_encode($output);
         }else{
             echo json_encode(array('error'=>"Expecting --msg-receive <username> <nickname> <password>"));
         }
+        echo "\n\n";
         break;
+
       default:
         $bold_msg = bold("php cli.php");
         echo "Wrong option please use {$bold_msg} for available options";
