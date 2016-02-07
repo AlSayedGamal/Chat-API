@@ -275,6 +275,8 @@ if (isset($argv[1])){
                 try{
                     $w = initiateConnection($username, $nickname, $password, $debug);
                     $w->sendMessage($target , $msg);
+                    // wait for server to acknowledge that a message has been sent!
+                    while($w->pollMessage());
                     echo "\n";
                     echo json_encode($output);
                 } catch (Exception $e) {
